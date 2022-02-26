@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-type args struct {
+type Args struct {
 	argsCount     int
 	args          []string
 	paramlessArgs []string
@@ -14,8 +14,8 @@ type args struct {
 	parsedIndices []int
 }
 
-func Init() *args {
-	a := new(args)
+func Init() *Args {
+	a := new(Args)
 	a.paramlessArgs = make([]string, 0)
 	a.paramedArgs = make(map[string]string, 0)
 	a.argsCount = len(os.Args)
@@ -23,13 +23,13 @@ func Init() *args {
 	return a
 }
 
-func (a *args) RegisterParamed(paramedArgs []string) {
+func (a *Args) RegisterParamed(paramedArgs []string) {
 	for _, arg := range paramedArgs {
 		arg = trimDashed(arg)
 		a.paramedArgs[arg] = ""
 	}
 }
-func (a *args) Parse() {
+func (a *Args) Parse() {
 	for index, arg := range os.Args {
 		a.args = append(a.args, arg)
 		if !a.isParsed(index) {
@@ -38,22 +38,22 @@ func (a *args) Parse() {
 	}
 }
 
-func (a *args) GetValue(arg string) (string, error) {
+func (a *Args) GetValue(arg string) (string, error) {
 	if value, found := a.paramedArgs[arg]; found {
 		return value, nil
 	}
 	return "", fmt.Errorf("could not find %s parameter value", arg)
 }
 
-func (a *args) GetArgs() []string {
+func (a *Args) GetArgs() []string {
 	return a.args
 }
 
-func (a *args) GetParamlessArgs() []string {
+func (a *Args) GetParamlessArgs() []string {
 	return a.paramlessArgs
 }
 
-func (a *args) GetRegisteredParamedArgs() []string {
+func (a *Args) GetRegisteredParamedArgs() []string {
 	registered := []string{}
 	for arg := range a.paramedArgs {
 		registered = append(registered, arg)
@@ -61,7 +61,7 @@ func (a *args) GetRegisteredParamedArgs() []string {
 	return registered
 }
 
-func (a *args) GetUsedParamedArgs() []string {
+func (a *Args) GetUsedParamedArgs() []string {
 	registeredAndUsed := []string{}
 	for _, arg := range a.GetRegisteredParamedArgs() {
 		if a.IsUsed(arg) {
@@ -71,7 +71,7 @@ func (a *args) GetUsedParamedArgs() []string {
 	return registeredAndUsed
 }
 
-func (a *args) GetUnusedParamedArgs() []string {
+func (a *Args) GetUnusedParamedArgs() []string {
 	registeredAndUnused := []string{}
 	for _, arg := range a.GetRegisteredParamedArgs() {
 		if !a.IsUsed(arg) {
@@ -81,7 +81,7 @@ func (a *args) GetUnusedParamedArgs() []string {
 	return registeredAndUnused
 }
 
-func (a *args) IsUsed(arg string) bool {
+func (a *Args) IsUsed(arg string) bool {
 	arg = trimDashed(arg)
 	if a, found := a.paramedArgs[arg]; found {
 		return a != ""
@@ -89,7 +89,7 @@ func (a *args) IsUsed(arg string) bool {
 	return false
 }
 
-func (a *args) parseArg(index int, arg string) {
+func (a *Args) parseArg(index int, arg string) {
 	isDashed := isDashed(arg)
 	arg = trimDashed(arg)
 	if isDashed && a.isRegistered(arg) {
@@ -102,21 +102,21 @@ func (a *args) parseArg(index int, arg string) {
 	}
 }
 
-func (a *args) addParamless(arg string) {
+func (a *Args) addParamless(arg string) {
 	a.paramlessArgs = append(a.paramlessArgs, arg)
 }
 
-func (a *args) addParam(args []string) {
+func (a *Args) addParam(args []string) {
 	a.paramedArgs[args[0]] = args[1]
 }
 
-func (a *args) isRegistered(arg string) bool {
+func (a *Args) isRegistered(arg string) bool {
 	arg = trimDashed(arg)
 	_, found := a.paramedArgs[arg]
 	return found
 }
 
-func (a *args) isParsed(index int) bool {
+func (a *Args) isParsed(index int) bool {
 	lastParsed := len(a.parsedIndices) - 1
 	if lastParsed >= 0 {
 		return index <= a.parsedIndices[lastParsed]
